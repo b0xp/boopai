@@ -1,51 +1,183 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Memecoin Scanner</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Solana Token Scanner</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"/>
 </head>
 <body class="flex items-center justify-center h-screen bg-gray-900 text-white">
   <div class="text-center">
-    <h1 class="text-4xl font-bold mb-6">Memecoin Scanner</h1>
-    <!-- Input Field -->
-    <input 
-      id="contractAddress" 
-      type="text" 
-      placeholder="Enter Contract Address" 
+    <h1 class="text-4xl font-bold mb-6">Solana Token Scanner</h1>
+    <input
+      id="contractAddress"
+      type="text"
+      placeholder="Enter Solana Token Address"
       class="px-4 py-2 border rounded-lg text-black mb-4 w-80"
     />
     <br />
-    <!-- Scan Button -->
-    <button 
-      onclick="handleScan()" 
-      class="px-6 py-2 bg-blue-500 hover:bg-blue-700 rounded-lg text-white">
+    <button
+      onclick="scanToken()"
+      class="px-6 py-2 bg-blue-500 hover:bg-blue-700 rounded-lg text-white"
+    >
       Scan
     </button>
-    <!-- Result Section -->
-    <p id="result" class="mt-4"></p>
+    <div id="result" class="mt-8 text-left px-4"></div>
   </div>
 
   <script>
-    function handleScan() {
-      const resultElement = document.getElementById('result');
-      const contractAddress = document.getElementById('contractAddress').value;
+    async function scanToken() {
+      const addressField = document.getElementById('contractAddress');
+      const resultField = document.getElementById('result');
+      const contractAddress = addressField.value.trim();
 
-      // Clear the previous result
-      resultElement.innerText = '';
+      // Clear previous result
+      resultField.innerHTML = '';
 
-      // Validate input
-      if (!contractAddress || !/^0x[a-fA-F0-9]{40}$/.test(contractAddress)) {
-        resultElement.innerText = 'Please enter a valid contract address!';
+      if (!contractAddress) {
+        resultField.innerHTML = '<p>Please enter a Solana contract address.</p>';
         return;
       }
 
-      // Simulate an API call
-      resultElement.innerText = 'Scanning in progress for: ' + contractAddress;
-      setTimeout(() => {
-        resultElement.innerText = `Scan complete for contract: ${contractAddress}! Placeholder result here.`;
-      }, 2000);
+      // Show a loading state
+      resultField.innerHTML = '<p>Scanning... Please wait.</p>';
+
+      try {
+        const response = await fetch('https://your-backend-url.com/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ contractAddress }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch data from the server');
+        }
+
+        const data = await response.json();
+
+        // Now 'data' contains all the information we want to display
+        displayResults(data);
+      } catch (error) {
+        resultField.innerHTML = `<p>Error: ${error.message}</p>`;
+      }
+    }
+
+    function displayResults(data) {
+      /*
+        Data structure you might receive from the Python backend:
+        {
+          devInfo: {
+            walletCreationDate: "...",
+            coinHoldings: "...",
+            transactionHistory: [...],
+            currentHoldings: [...],
+            sourceOfFunds: [...]
+          },
+          supplyInfo: {
+            topHolders: [...],
+            top10Percent: "...",
+            identicalHoldings: "...",
+            rugcheckData: {...}
+          },
+          socials: {
+            twitter: {
+              username: "...",
+              accountCreated: "...",
+              postCount: 0,
+              recentActivity: "...",
+              deletedPostsCount: 0
+            },
+            website: {
+              domainCreationDate: "...",
+              hasContractAddressOnPage: true,
+              isSimple: false,
+              linkedGitHub: "https://github.com/...",
+              otherSocials: [...]
+            }
+          }
+        }
+      */
+
+      const resultField = document.getElementById('result');
+
+      // Build an HTML string or create DOM elements
+      let html = `<h2 class="text-2xl font-bold mb-4">Scan Results</h2>`;
+
+      // A. Developer (Dev) Info
+      if (data.devInfo) {
+        html += `
+        <h3 class="text-xl font-semibold">Developer Info</h3>
+        <p>Wallet Created: ${data.devInfo.walletCreationDate || 'N/A'}</p>
+        <p>Coins Held: ${data.devInfo.coinHoldings || 'N/A'}</p>
+        <p>Current Holdings: ${data.devInfo.currentHoldings || 'N/A'}</p>
+        <p>Source of Funds: ${data.devInfo.sourceOfFunds || 'N/A'}</p>
+        <p>Previous Txns: ${
+          data.devInfo.transactionHistory
+            ? JSON.stringify(data.devInfo.transactionHistory)
+            : 'N/A'
+        }</p>
+        <hr class="my-4"/>
+        `;
+      }
+
+      // B. Supply Info
+      if (data.supplyInfo) {
+        html += `
+        <h3 class="text-xl font-semibold">Supply Info</h3>
+        <p>Top 10 Holders: ${
+          data.supplyInfo.topHolders
+            ? JSON.stringify(data.supplyInfo.topHolders)
+            : 'N/A'
+        }</p>
+        <p>Are holdings identical? ${
+          data.supplyInfo.identicalHoldings || 'N/A'
+        }</p>
+        <p>Rugcheck Data: ${
+          data.supplyInfo.rugcheckData
+            ? JSON.stringify(data.supplyInfo.rugcheckData)
+            : 'N/A'
+        }</p>
+        <hr class="my-4"/>
+        `;
+      }
+
+      // C. Socials
+      if (data.socials) {
+        // Twitter
+        if (data.socials.twitter) {
+          html += `
+          <h3 class="text-xl font-semibold">Twitter Info</h3>
+          <p>Username: ${data.socials.twitter.username || 'N/A'}</p>
+          <p>Created: ${data.socials.twitter.accountCreated || 'N/A'}</p>
+          <p>Posts: ${data.socials.twitter.postCount || 'N/A'}</p>
+          <p>Recent Activity: ${data.socials.twitter.recentActivity || 'N/A'}</p>
+          <p>Deleted Posts: ${data.socials.twitter.deletedPostsCount || 'N/A'}</p>
+          <hr class="my-4"/>
+          `;
+        }
+
+        // Website
+        if (data.socials.website) {
+          html += `
+          <h3 class="text-xl font-semibold">Website Info</h3>
+          <p>Domain Created: ${data.socials.website.domainCreationDate || 'N/A'}</p>
+          <p>Contains CA on Page: ${data.socials.website.hasContractAddressOnPage || 'N/A'}</p>
+          <p>Is Website Simple?: ${data.socials.website.isSimple || 'N/A'}</p>
+          <p>Linked GitHub: ${data.socials.website.linkedGitHub || 'N/A'}</p>
+          <p>Other Socials: ${
+            data.socials.website.otherSocials
+              ? JSON.stringify(data.socials.website.otherSocials)
+              : 'N/A'
+          }</p>
+          <hr class="my-4"/>
+          `;
+        }
+      }
+
+      // Output the final HTML
+      resultField.innerHTML = html;
     }
   </script>
 </body>
