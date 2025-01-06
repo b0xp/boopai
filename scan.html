@@ -9,22 +9,42 @@
 <body class="flex items-center justify-center h-screen bg-gray-900 text-white">
   <div class="text-center">
     <h1 class="text-4xl font-bold mb-6">Memecoin Scanner</h1>
+    <!-- Input Field -->
+    <input 
+      id="contractAddress" 
+      type="text" 
+      placeholder="Enter Contract Address" 
+      class="px-4 py-2 border rounded-lg text-black mb-4 w-80"
+    />
+    <br />
+    <!-- Scan Button -->
     <button 
       onclick="handleScan()" 
       class="px-6 py-2 bg-blue-500 hover:bg-blue-700 rounded-lg text-white">
       Scan
     </button>
+    <!-- Result Section -->
     <p id="result" class="mt-4"></p>
   </div>
 
   <script>
     function handleScan() {
       const resultElement = document.getElementById('result');
-      resultElement.innerText = 'Scanning in progress...';
+      const contractAddress = document.getElementById('contractAddress').value;
+
+      // Clear the previous result
+      resultElement.innerText = '';
+
+      // Validate input
+      if (!contractAddress || !/^0x[a-fA-F0-9]{40}$/.test(contractAddress)) {
+        resultElement.innerText = 'Please enter a valid contract address!';
+        return;
+      }
 
       // Simulate an API call
+      resultElement.innerText = 'Scanning in progress for: ' + contractAddress;
       setTimeout(() => {
-        resultElement.innerText = 'Scan complete! This is just a placeholder result.';
+        resultElement.innerText = `Scan complete for contract: ${contractAddress}! Placeholder result here.`;
       }, 2000);
     }
   </script>
