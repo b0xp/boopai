@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memecoin Scanner</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+</head>
+<body class="flex items-center justify-center h-screen bg-gray-900 text-white">
+  <div class="text-center">
+    <h1 class="text-4xl font-bold mb-6">Memecoin Scanner</h1>
+    <button 
+      onclick="handleScan()" 
+      class="px-6 py-2 bg-blue-500 hover:bg-blue-700 rounded-lg text-white">
+      Scan
+    </button>
+    <p id="result" class="mt-4"></p>
+  </div>
+
+  <script>
+    function handleScan() {
+      const resultElement = document.getElementById('result');
+      resultElement.innerText = 'Scanning in progress...';
+
+      // Simulate an API call
+      setTimeout(() => {
+        resultElement.innerText = 'Scan complete! This is just a placeholder result.';
+      }, 2000);
+    }
+  </script>
+</body>
+</html>
